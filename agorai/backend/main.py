@@ -15,7 +15,7 @@ import hashlib # IP hashlemek için
 load_dotenv()
 
 # --- Ortam Değişkenleri --- (Render'da ayarlanacak)
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@host:port/database")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agorai_db_user:HVXkyrnmF5PrB4LUnqbmQyc2eNol70Bt@dpg-d16rob6mcj7s73ch5sd0-a/agorai_db")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
