@@ -2,7 +2,6 @@ import redis
 import os
 import json
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from hashlib import md5
 import requests
 from sqlalchemy import create_engine, text
@@ -10,24 +9,12 @@ from datetime import datetime
 
 app = FastAPI()
 
-# CORS ayarları (frontend için)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://*.netlify.app", "http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# PostgreSQL bağlantısı
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 
-# Redis bağlantısı
 REDIS_URL = os.getenv("REDIS_URL")
 redis_client = redis.Redis.from_url(REDIS_URL, decode_responses=True, ssl=True)
 
-# Önbellek fonksiyonları
 def cache_response(query: str, responses: dict):
     query_hash = md5(query.encode()).hexdigest()
     redis_client.setex(f"query:{query_hash}", 3600, json.dumps(responses))
@@ -37,7 +24,6 @@ def get_cached_response(query: str):
     cached = redis_client.get(f"query:{query_hash}")
     return json.loads(cached) if cached else None
 
-# Kota kontrolü
 def check_quota(ip_address: str):
     with engine.connect() as conn:
         result = conn.execute(
@@ -76,23 +62,19 @@ async def handle_query(request: Request, query: dict):
     question = query.get("query")
     ip_address = request.client.host
 
-    # Kota kontrolü
     allowed, message = check_quota(ip_address)
     if not allowed:
         return {"error": message}
 
-    # Önbellekten kontrol et
     cached = get_cached_response(question)
     if cached:
         return cached
 
-    # AI API'lerine istek gönder (örnek)
     responses = {
         "chatgpt": "Merhaba, bu bir örnek yanıt!",
         "grok": "Selam, ben Grok’tan yanıt veriyorum!"
     }
 
-    # Önbelleğe kaydet
     cache_response(question, responses)
     return responses
 
