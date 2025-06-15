@@ -2,12 +2,22 @@ import redis
 import os
 import json
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from hashlib import md5
 import requests
 from sqlalchemy import create_engine, text
 from datetime import datetime
 
 app = FastAPI()
+
+# CORS ayarları (frontend için)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://*.netlify.app", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # PostgreSQL bağlantısı
 DATABASE_URL = os.getenv("DATABASE_URL")
